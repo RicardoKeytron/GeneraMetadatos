@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Añadir Metadatos a PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.4.0/pdf-lib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .download-btn {
+            background-color: #2196F3;
+        }
+        .download-btn:hover {
+            background-color: #0b7dda;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3;
+            color: #31708f;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Añadir Metadatos a PDF</h1>
+<div class="container">
+    <div class="controls">
+        <div class="control-group">
+            <label for="pdfFile">Selecciona un archivo PDF:</label>
+            <input type="file" id="pdfFile" accept=".pdf" required />
+        </div>
+        <div class="control-group">
+            <label for="meta1">Autor:</label>
+            <input type="text" id="meta1" placeholder="Autor del PDF" required />
+        </div>
+        <div class="control-group">
+            <label for="meta2">Título:</label>
+            <input type="text" id="meta2" placeholder="Título del PDF" required />
+        </div>
+        <div class="control-group">
+            <label for="meta3">Asunto:</label>
+            <input type="text" id="meta3" placeholder="Asunto del PDF" required />
+        </div>
+    </div>
+    
+    <button onclick="addMetadata()">Añadir Metadatos</button>
+    <a id="downloadLink" class="download-btn" style="display:none" download="modified.pdf">Descargar PDF Modificado</a>
+
+    <div id="message" class="message">
+        Los metadatos han sido añadidos correctamente al PDF.
+    </div>
+</div>
+
+<script>
+    async function addMetadata() {
+        const fileInput = document.getElementById('pdfFile');
+        const meta1 = document.getElementById('meta1').value;
+        const meta2 = document.getElementById('meta2').value;
+        const meta3 = document.getElementById('meta3').value;
+
+        if (fileInput.files.length === 0) {
+            alert('Por favor, selecciona un archivo PDF.');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const arrayBuffer = await file.arrayBuffer();
+
+        try {
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+            // Añadir metadatos personalizados al PDF
+            pdfDoc.setAuthor(meta1);
+            pdfDoc.setTitle(meta2);
+            pdfDoc.setSubject(meta3);
+
+            const modifiedPdfBytes = await pdfDoc.save();
+
+            // Crear el archivo modificado
+            const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+
+            // Mostrar el botón de descarga
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = url;
+            downloadLink.style.display = 'inline-block';
+
+            // Mostrar mensaje de éxito
+            const message = document.getElementById('message');
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 4000);
+        } catch (error) {
+            console.error('Error al modificar el PDF:', error);
+            alert('Hubo un error al añadir los metadatos al PDF.');
+        }
+    }
+</script>
+
+</body>
+</html>
